@@ -1,0 +1,8 @@
+Flask
+peewee
+requests
+Flask-Redis
+Werkzeug
+psycopg2-binary
+rq
+worker

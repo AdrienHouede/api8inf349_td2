@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipes List</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label, input, button {
+            margin-right: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        td:last-child {
+            text-align: center;
+        }
+
+        button, a {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover, a:hover {
+            background-color: #45a049;
+        }
+
+        /* Styles pour les boutons de suppression */
+        td button, td a {
+            background-color: #f44336;
+        }
+
+        td button:hover, td a:hover {
+            background-color: #d32f2f;
+        }
+
+        input[type="text"],
+        input[type="number"],input[type=email],
+        button, a {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,input[type=email],
+        button:focus, a:focus {
+        outline: none;
+        border-color: #4CAF50;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var addButton = document.getElementById("btn_product");
+            var productCounter = 0;
+
+            addButton.addEventListener("click", function(event) {
+                event.preventDefault(); // Empêche le comportement par défaut du lien
+
+                var productContainer = document.getElementById("product_container");
+                var productTemplate = document.getElementById("product_template").cloneNode(true);
+                productTemplate.style.display = "block";
+                productTemplate.style.margin = "10px 0";
+
+                productTemplate.querySelector('input[name="product"]').setAttribute("name", "products[]");
+                productTemplate.querySelector('input[name="quantity"]').setAttribute("name", "quantities[]");
+                productTemplate.querySelectorAll('input[type="text"], input[type="number"]').forEach(function(input) {
+                    input.setAttribute("required", "required");});
+                
+                productContainer.appendChild(productTemplate);
+            });
+        });
+
+        function populateDropdown() {
+            fetch('/cached_orders')
+                .then(response => response.json())
+                .then(data => {
+                    const dropdown = document.getElementById('orderDropdown');
+                    dropdown.innerHTML = '<option value="">Select an order...</option>';
+                    data.orders.forEach(orderId => {
+                        const option = document.createElement('option');
+                        option.value = orderId;
+                        option.textContent = `Order ID: ${orderId}`;
+                        dropdown.appendChild(option);
+                    });
+                });
+        }
+
+        function viewSelectedOrder() {
+            const selectedOrderId = document.getElementById('orderDropdown').value;
+            if (selectedOrderId) {
+                window.location.href = `/order/${selectedOrderId}`;
+            } else {
+                alert('Please select an order');
+            }
+        }
+
+        window.onload = populateDropdown;
+
+    </script>
+</head>
+<body>
+    <h1>Recipes List</h1>
+    <form action="/order" method="POST">
+        <div style="display:flex; flex-direction: column; text-align: center;">
+            <div id="product_container">
+                <div id="product_template" style="display: none;">
+                    <div>
+                        <label for="product">Product Name:</label>
+                        <input type="text" name="product">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" name="quantity" min="1">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <a id="btn_product">Add a product</a>
+            </div>
+            <div style="margin: 10px 0;">
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label for="postal_code">Postal Code:</label>
+                <input type="text" id="postal_code" name="postal_code" required>
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" required>
+                <label for="province">Province:</label>
+                <input type="text" id="province" name="province" required>
+            </div>
+            <div><button type="submit">Pass order</button></div>
+        </div>
+    </form>
+
+    <div style="display: flex; justify-content: center; width: 100%;">
+        <div style="display:flex; flex-direction: column; text-align: center; width: 20%; margin: 20px;">
+            <h2>Select an Order</h2>
+            <select id="orderDropdown" style="margin-bottom: 10px;">
+                <option value="">Select an order...</option>
+            </select>
+            <button onclick="viewSelectedOrder()">View Order</button>
+        </div>
+    </div>
+    <table>
+        <tr>
+            <th>Recipe Name</th>
+            <th>Price</th>
+            <th>In stock</th>
+            <th>Action</th>
+        </tr>
+        {% for row in shopping_list %}
+        <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.price }}</td>
+            <td>{{ row.in_stock }}</td>
+            <td>
+                <form action="/delete/{{ loop.index0 }}" method="GET">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

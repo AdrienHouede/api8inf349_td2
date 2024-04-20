@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .order-details {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details</h1>
+        <div class="order-details">
+            <div class="order-item">
+                <span class="label">Order ID:</span> <span id="order-id"></span>
+            </div>
+            <div class="order-item">
+                <span class="label">Email:</span> <span id="email"></span>
+            </div>
+            <div class="order-item">
+                <span class="label">Total Price:</span> <span id="total-price"></span>
+            </div>
+            <div class="order-item">
+                <span class="label">Paid:</span> <span id="paid"></span>
+            </div>
+            <div class="order-item">
+                <span class="label">Shipping Address:</span> <span id="shipping-address"></span>
+            </div>
+            <div class="order-item">
+                <span class="label">Products:</span>
+                <ul id="products"></ul>
+            </div>
+            <div class="order-item">
+                <span class="label">Transaction ID:</span> <span id="transaction-id"></span>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const orderDetails = JSON.parse(`{"order":{"credit_card":{"cvv":"333","expiration_month":"7","expiration_year":"2028","name":"test","number":"4242 4242 4242 4242"},"email":"adrien.houede@gmail.com","id":717,"paid":true,"products":{"1":{"quantity":4},"2":{"quantity":4},"3":{"quantity":5}},"shipping_information":{"address":"610 - 3 saint Thomas","city":"Chicoutimi","country":"France","postal_code":"G7H2R1","province":"Qu\u00e9bec"},"shipping_price":25.0,"total_price":374.95,"transaction":{"amount_charged":399.95,"id":"mGZ4E2XInkeCAN0YHyJS","success":"true"}}}`);
+
+            document.getElementById('order-id').textContent = orderDetails.order.id;
+            document.getElementById('email').textContent = orderDetails.order.email;
+            document.getElementById('total-price').textContent = orderDetails.order.total_price;
+            document.getElementById('paid').textContent = orderDetails.order.paid ? 'Yes' : 'No';
+
+            const shippingAddress = `${orderDetails.order.shipping_information.address}, ${orderDetails.order.shipping_information.city}, ${orderDetails.order.shipping_information.province}, ${orderDetails.order.shipping_information.country}, ${orderDetails.order.shipping_information.postal_code}`;
+            document.getElementById('shipping-address').textContent = shippingAddress;
+
+            const productsList = document.getElementById('products');
+            Object.keys(orderDetails.order.products).forEach(productId => {
+                const productItem = document.createElement('li');
+                productItem.textContent = `Product ID: ${productId}, Quantity: ${orderDetails.order.products[productId].quantity}`;
+                productsList.appendChild(productItem);
+            });
+
+            document.getElementById('transaction-id').textContent = orderDetails.order.transaction.id;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+version: "3"
+
+volumes:
+  volume-postgres:
+
+services:
+  cache:
+    image: memcached:1.5-alpine
+    ports:
+      - 11211:11211
+
+  database:
+    hostname: "api8inf349"
+    image: postgres:12-alpine
+    volumes:
+      - volume-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_HOST: api8inf349
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: api8inf349
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -t 1" ]
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 1s
+
+  my_flask_app:
+    build: ./
+    ports:
+      - 5000:5000
+    command: bash -c "flask --app api8inf349.py init-db && flask --app api8inf349.py run --host=0.0.0.0 --port=5000"
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
+  rq_worker:
+    build: ./
+    command: python worker.py
+    depends_on:
+      - redis
